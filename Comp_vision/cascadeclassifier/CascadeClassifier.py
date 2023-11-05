@@ -6,9 +6,20 @@ def detectAndDisplay(frame):
     frame_gray = cv.cvtColor(frame, cv.COLOR_BGR2GRAY)
     frame_gray = cv.equalizeHist(frame_gray)
 
+    #-- Detect body
+   
+    body = body_cascade.detectMultiScale(frame_gray)
+    for (x,y,w,h) in body:
+        cv.rectangle(frame, (x,y), (x+w, y+h), (0, 255, 0), 2)
+        
+    
     #-- Detect faces
     faces = face_cascade.detectMultiScale(frame_gray)
+    count = 0
     for (x,y,w,h) in faces:
+        count += 1
+        font = cv.FONT_HERSHEY_DUPLEX
+        cv.putText(frame, f"Face count is {count}", (x + 6, y - 6), font, 0.5, (0, 255, 0), 1)
         center = (x + w//2, y + h//2)
         frame = cv.ellipse(frame, center, (w//2, h//2), 0, 0, 360, (255, 0, 255), 4)
 
@@ -20,25 +31,33 @@ def detectAndDisplay(frame):
             radius = int(round((w2 + h2)*0.25))
             frame = cv.circle(frame, eye_center, radius, (255, 0, 0 ), 4)
 
+
     cv.imshow('Capture - Face detection', frame)
+    cv.imshow('Capture - Body detection', frame)
 
 parser = argparse.ArgumentParser(description='Code for Cascade Classifier tutorial.')
-parser.add_argument('--face_cascade', help='Path to face cascade.', default='dronevenv/Lib/site-packages/cv2/data/haarcascade_frontalface_alt.xml')
-parser.add_argument('--eyes_cascade', help='Path to eyes cascade.', default='dronevenv/Lib/site-packages/cv2/data/haarcascade_eye_tree_eyeglasses.xml')
+parser.add_argument('--face_cascade', help='Path to face cascade.', default='Comp_vision/dronevenv/Lib/site-packages/cv2/data/haarcascade_frontalface_alt.xml')
+parser.add_argument('--eyes_cascade', help='Path to eyes cascade.', default='Comp_vision/dronevenv/Lib/site-packages/cv2/data/haarcascade_eye_tree_eyeglasses.xml')
+parser.add_argument('--body_cascade', help='Path to body cascade.', default='Comp_vision/dronevenv/Lib/site-packages/cv2/data/haarcascade_upperbody.xml')
 parser.add_argument('--camera', help='Camera divide number.', type=int, default=0)
 args = parser.parse_args()
 
 face_cascade_name = args.face_cascade
 eyes_cascade_name = args.eyes_cascade
+body_cascade_name = args.body_cascade
 
 face_cascade = cv.CascadeClassifier()
 eyes_cascade = cv.CascadeClassifier()
+body_cascade = cv.CascadeClassifier()
 
 #-- 1. Load the cascades
 if not face_cascade.load(cv.samples.findFile(face_cascade_name)):
     print('--(!)Error loading face cascade')
     exit(0)
 if not eyes_cascade.load(cv.samples.findFile(eyes_cascade_name)):
+    print('--(!)Error loading eyes cascade')
+    exit(0)
+if not body_cascade.load(cv.samples.findFile(body_cascade_name)):
     print('--(!)Error loading eyes cascade')
     exit(0)
 
