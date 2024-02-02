@@ -3,12 +3,12 @@ import cv2 as cv
 import argparse
 import supervision as sv
 from roboflow import Roboflow
-rf = Roboflow(api_key="vo9YGIYqBw5SlPoa2Csm")
+rf = Roboflow(api_key="")
+
 project = rf.workspace().project("head_count-66hcq") 
 model = project.version(3).model
 
 annotator = sv.BoxAnnotator()
-
        
 def on_prediction(predictions, frame):
     labels = [p["class"] for p in predictions["predictions"]]
@@ -38,6 +38,7 @@ while True:
         break
 
     predictions = model.predict(frame, confidence=50, overlap=30).json()
+    print(predictions)
     on_prediction(predictions, frame)
 
     if cv.waitKey(10) == 27:
