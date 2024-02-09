@@ -12,6 +12,10 @@ import supervision as sv
 # Helper function to improve frame rate (In progress)
 def parse_arguments() -> argparse.Namespace:   
     parser = argparse.ArgumentParser(description="Yolov8")  # Use argparser to improve frame rate somehow
+    parser.add_argument("--resolution", type=str, default="640x360", help="input resolution for the detection model (wxh). lower resolutions to help speed.")
+    parser.add_argument("--skip-frames", type=int, default=1, help="Process every nth frame to improve speed. 1 = process every frame.")
+
+    return parser.parse_args()
 
 # Main detect function
 def detect():
