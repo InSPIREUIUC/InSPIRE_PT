@@ -15,8 +15,15 @@ from ultralytics import YOLO
 '''
 def parse_arguments() -> argparse.Namespace:   
     parser = argparse.ArgumentParser(description="Yolov8")  # Use argparser to improve frame rate somehow
-'''
+<<<<<<< HEAD
 
+=======
+    parser.add_argument("--resolution", type=str, default="640x360", help="input resolution for the detection model (wxh). lower resolutions to help speed.")
+    parser.add_argument("--skip-frames", type=int, default=1, help="Process every nth frame to improve speed. 1 = process every frame.")
+
+    return parser.parse_args()
+>>>>>>> abe3d322806d0ac652ffb04dc69596106ced0629
+'''
 # Main detect function
 def detect():
     cap = cv.VideoCapture(0)    # Select webcam
