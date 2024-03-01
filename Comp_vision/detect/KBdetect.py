@@ -29,6 +29,7 @@ def detect():
     cap = cv.VideoCapture(0)    # Select webcam
     model = YOLO("yolov8n.pt")  # Select model Yolov8 from Roboflow
     model.predict(source="0", stream=True, classes=0)    # Select class '0' which only predicts People
+    #model.predict(source="0", stream=True)  
     # Formats the bounding boxes
     box_annotator = sv.BoxAnnotator(                        
         thickness=2,    
