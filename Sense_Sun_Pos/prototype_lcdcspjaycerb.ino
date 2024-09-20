@@ -97,7 +97,8 @@ void calculateSolarPosition(unsigned long millisec, float latitude, float longit
     solarTime += 1440.0;
   }
 
-  float solarDeclination = asin(sin(radians(meanAnomaly)) * sin(radians(23.45)));  // Approximation
+  //float solarDeclination = asin(sin(radians(meanAnomaly)) * sin(radians(23.45)));  // old calculation for declination
+  double solarDeclination = 23.45 *sin((360.0/365.0)*(julianDate-81));
 
   solarElevation = asin(sin(radians(latitude)) * sin(solarDeclination) + cos(radians(latitude)) * cos(solarDeclination) * cos(radians(solarTime / 4.0 - 180.0)));
 
