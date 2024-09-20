@@ -31,14 +31,17 @@ void loop() {
   // read analog X and Y analog values
   xValue = analogRead(VRX_PIN);
   yValue = analogRead(VRY_PIN);
+  
+  xValue = map(xValue, 0, 1023, 0, 180);
+  yValue = map(yValue, 0, 1023, 0, 180);
 
-  servo1.write(xValue/5.683);
-  servo2.write(yValue/5.683);
+  servo1.write(xValue);
+  servo2.write(yValue);
   // print data to Serial Monitor on Arduino IDE
   Serial.print("x = ");
-  Serial.print(xValue/5.683);
+  Serial.print(xValue);
   Serial.print(", y = ");
-  Serial.println(yValue/5.683);
-  map()
+  Serial.println(yValue);
+
   delay(100);
 }
