@@ -28,23 +28,18 @@ else:
     print("Using Tiny YoloV4 model. If you wish to use Tiny YOLOv3, call 'tiny_yolo.py yolo3'")
 
 if not Path(nnPath).exists():
-    import sys
     raise FileNotFoundError(f'Required file/s not found, please run "{sys.executable} install_requirements.py"')
 
-# tiny yolo v4 label texts
+# Tiny YOLOv4 label texts
 labelMap = [
-    "person",         "bicycle",    "car",           "motorbike",     "aeroplane",   "bus",           "train",
-    "truck",          "boat",       "traffic light", "fire hydrant",  "stop sign",   "parking meter", "bench",
-    "bird",           "cat",        "dog",           "horse",         "sheep",       "cow",           "elephant",
-    "bear",           "zebra",      "giraffe",       "backpack",      "umbrella",    "handbag",       "tie",
-    "suitcase",       "frisbee",    "skis",          "snowboard",     "sports ball", "kite",          "baseball bat",
-    "baseball glove", "skateboard", "surfboard",     "tennis racket", "bottle",      "wine glass",    "cup",
-    "fork",           "knife",      "spoon",         "bowl",          "banana",      "apple",         "sandwich",
-    "orange",         "broccoli",   "carrot",        "hot dog",       "pizza",       "donut",         "cake",
-    "chair",          "sofa",       "pottedplant",   "bed",           "diningtable", "toilet",        "tvmonitor",
-    "laptop",         "mouse",      "remote",        "keyboard",      "cell phone",  "microwave",     "oven",
-    "toaster",        "sink",       "refrigerator",  "book",          "clock",       "vase",          "scissors",
-    "teddy bear",     "hair drier", "toothbrush"
+    "person", "bicycle", "car", "motorbike", "aeroplane", "bus", "train", "truck", "boat", "traffic light", "fire hydrant",
+    "stop sign", "parking meter", "bench", "bird", "cat", "dog", "horse", "sheep", "cow", "elephant", "bear", "zebra",
+    "giraffe", "backpack", "umbrella", "handbag", "tie", "suitcase", "frisbee", "skis", "snowboard", "sports ball",
+    "kite", "baseball bat", "baseball glove", "skateboard", "surfboard", "tennis racket", "bottle", "wine glass",
+    "cup", "fork", "knife", "spoon", "bowl", "banana", "apple", "sandwich", "orange", "broccoli", "carrot", "hot dog",
+    "pizza", "donut", "cake", "chair", "sofa", "pottedplant", "bed", "diningtable", "toilet", "tvmonitor", "laptop",
+    "mouse", "remote", "keyboard", "cell phone", "microwave", "oven", "toaster", "sink", "refrigerator", "book",
+    "clock", "vase", "scissors", "teddy bear", "hair drier", "toothbrush"
 ]
 
 syncNN = True
@@ -88,55 +83,92 @@ else:
 
 detectionNetwork.out.link(nnOut.input)
 
-# Connect to device and start pipeline
-with dai.Device(pipeline) as device:
+# Function to normalize frame
+def frameNorm(frame, bbox):
+    normVals = np.full(len(bbox), frame.shape[0])
+    normVals[::2] = frame.shape[1]
+    return (np.clip(np.array(bbox), 0, 1) * normVals).astype(int)
 
-    # Output queues will be used to get the rgb frames and nn data from the outputs defined above
-    qRgb = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
-    qDet = device.getOutputQueue(name="nn", maxSize=4, blocking=False)
+# Function to display frame
+def displayFrame(name, frame):
+    color = (255, 0, 0)
+    for detection in detections:
+        bbox = frameNorm(frame, (detection.xmin, detection.ymin, detection.xmax, detection.ymax))
+        cv2.putText(frame, labelMap[detection.label], (bbox[0] + 10, bbox[1] + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
+        cv2.putText(frame, f"{int(detection.confidence * 100)}%", (bbox[0] + 10, bbox[1] + 40), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
+        cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
+    cv2.imshow(name, frame)
 
-    frame = None
-    detections = []
-    startTime = time.monotonic()
-    counter = 0
-    color2 = (255, 255, 255)
+# Main execution block
+if __name__ == "__main__":
+    with dai.Device(pipeline) as device:
+        qRgb = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
+        qDet = device.getOutputQueue(name="nn", maxSize=4, blocking=False)
 
-    # nn data, being the bounding box locations, are in <0..1> range - they need to be normalized with frame width/height
-    def frameNorm(frame, bbox):
-        normVals = np.full(len(bbox), frame.shape[0])
-        normVals[::2] = frame.shape[1]
-        return (np.clip(np.array(bbox), 0, 1) * normVals).astype(int)
+        frame = None
+        detections = []
+        startTime = time.monotonic()
+        counter = 0
+        color2 = (255, 255, 255)
 
-    def displayFrame(name, frame):
-        color = (255, 0, 0)
-        for detection in detections:
-            bbox = frameNorm(frame, (detection.xmin, detection.ymin, detection.xmax, detection.ymax))
-            cv2.putText(frame, labelMap[detection.label], (bbox[0] + 10, bbox[1] + 20), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
-            cv2.putText(frame, f"{int(detection.confidence * 100)}%", (bbox[0] + 10, bbox[1] + 40), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
-            cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
-        # Show the frame
-        cv2.imshow(name, frame)
+        while True:
+            if syncNN:
+                inRgb = qRgb.get()
+                inDet = qDet.get()
+            else:
+                inRgb = qRgb.tryGet()
+                inDet = qDet.tryGet()
 
-    while True:
-        if syncNN:
-            inRgb = qRgb.get()
-            inDet = qDet.get()
-        else:
-            inRgb = qRgb.tryGet()
-            inDet = qDet.tryGet()
+            if inRgb is not None:
+                frame = inRgb.getCvFrame()
+                cv2.putText(frame, "NN fps: {:.2f}".format(counter / (time.monotonic() - startTime)),
+                            (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color2)
 
-        if inRgb is not None:
-            frame = inRgb.getCvFrame()
-            cv2.putText(frame, "NN fps: {:.2f}".format(counter / (time.monotonic() - startTime)),
-                        (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color2)
+            if inDet is not None:
+                detections = [detection for detection in inDet.detections if detection.label == 0]
+                counter += 1
 
-        if inDet is not None:
-           # detections = inDet.detections
-            detections = [detection for detection in inDet.detections if detection.label == 0]
-            counter += 1
+            if frame is not None:
+                displayFrame("rgb", frame)
 
-        if frame is not None:
-            displayFrame("rgb", frame)
+            if cv2.waitKey(1) == ord('q'):
+                break
 
-        if cv2.waitKey(1) == ord('q'):
-            break
+# Function to generate YOLO-processed frames for Flask
+def generate_yolo_frames():
+    with dai.Device(pipeline) as device:
+        qRgb = device.getOutputQueue(name="rgb", maxSize=4, blocking=False)
+        qDet = device.getOutputQueue(name="nn", maxSize=4, blocking=False)
+
+        frame = None
+        detections = []
+        startTime = time.monotonic()
+        counter = 0
+        color2 = (255, 255, 255)
+
+        while True:
+            if syncNN:
+                inRgb = qRgb.get()
+                inDet = qDet.get()
+            else:
+                inRgb = qRgb.tryGet()
+                inDet = qDet.tryGet()
+
+            if inRgb is not None:
+                frame = inRgb.getCvFrame()
+                cv2.putText(frame, "NN fps: {:.2f}".format(counter / (time.monotonic() - startTime)),
+                            (2, frame.shape[0] - 4), cv2.FONT_HERSHEY_TRIPLEX, 0.4, color2)
+
+            if inDet is not None:
+                detections = [detection for detection in inDet.detections if detection.label == 0]
+                counter += 1
+
+            if frame is not None:
+                displayFrame("rgb", frame)
+                ret, buffer = cv2.imencode('.jpg', frame)
+                frame_bytes = buffer.tobytes()
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + frame_bytes + b'\r\n')
+
+            if cv2.waitKey(1) == ord('q'):
+                break
