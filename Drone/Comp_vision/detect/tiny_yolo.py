@@ -15,13 +15,13 @@ import time
 from ultralytics import YOLO
 
 # Get argument first
-nnPath = str((Path(__file__).parent / Path('../models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
+nnPath = str((Path(__file__).parent / Path('/home/inspire/Documents/depthai-python/examples/models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
 if 1 < len(sys.argv):
     arg = sys.argv[1]
     if arg == "yolo3":
-        nnPath = str((Path(__file__).parent / Path('../models/yolo-v3-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
+        nnPath = str((Path(__file__).parent / Path('/home/inspire/Documents/depthai-python/examples/models/yolo-v3-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
     elif arg == "yolo4":
-        nnPath = str((Path(__file__).parent / Path('../models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
+        nnPath = str((Path(__file__).parent / Path('/home/inspire/Documents/depthai-python/examples/models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
     else:
         nnPath = arg
 else:
