@@ -6,7 +6,7 @@ import cv2
 class ObjectDetector:
     def __init__(self):
         # Define the path to the YOLOv4 model blob file
-        self.nnPath = str((Path(__file__).parent / Path('../models/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
+        self.nnPath = str((Path(__file__).parent / Path('/home/inspire/InSPIRE_PT/Drone/Comp_vision/detect/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
 
         # YOLOv4 label texts
         self.labelMap = [
@@ -89,7 +89,8 @@ class ObjectDetector:
             cv2.putText(frame, f"{int(detection.confidence * 100)}%", (bbox[0] + 10, bbox[1] + 40), cv2.FONT_HERSHEY_TRIPLEX, 0.5, 255)
             cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), color, 2)
         # Show the frame
-        cv2.imshow(name, frame)
+        #cv2.imshow(name, frame)  # 'return' if want to use webserver, 'cv2.imshow(name, frame)' for local.
+        return frame
 
     def get_frame_with_detections(self):
         while True:
@@ -109,9 +110,9 @@ class ObjectDetector:
 
             if inDet is not None:
                 # detections = inDet.detections
-                self.detections.extend([detection for detection in inDet.detections if detection.label == 0])
+                self.detections = [detection for detection in inDet.detections if detection.label == 0]
 
             if frame is not None:
-                self.displayFrame("rgb", frame)
+                return self.displayFrame("rgb", frame) # 'return' if you want to use webserver, not needed if local
 
                     
