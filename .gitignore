@@ -1,3 +1,5 @@
 .DS_Store
 myenv/
-
+Drone/Comp_vision/venv
+Drone/Telemetry/__pycache__
+python.py
