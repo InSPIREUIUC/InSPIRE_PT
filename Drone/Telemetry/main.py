@@ -1,7 +1,8 @@
 from flask import Flask, Response
 import cv2
-from tiny_yolo import ObjectDetector
-
+import sys
+sys.path.append("/Users/khuselbayar/Desktop/InSPIRE_PT")
+from Drone.Comp_vision.tiny_yolo import ObjectDetector
 # Initialize Flask app
 app = Flask(__name__)
 

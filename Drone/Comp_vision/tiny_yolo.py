@@ -6,7 +6,7 @@ import cv2
 class ObjectDetector:
     def __init__(self):
         # Define the path to the YOLOv4 model blob file
-        self.nnPath = str((Path(__file__).parent / Path('C:/Users/joeyl/Desktop/Everything/School/InSPIRE_PT/Drone/Comp_vision/detect/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
+        self.nnPath = str((Path(__file__).parent / Path('../Comp_vision/Model/yolo-v4-tiny-tf_openvino_2021.4_6shave.blob')).resolve().absolute())
 
         # YOLOv4 label texts
         self.labelMap = [
